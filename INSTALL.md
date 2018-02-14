@@ -74,7 +74,7 @@ subscription-manager repos --enable=rhel-7-server-rpms --enable=rhel-7-server-ex
 ```
 
 - Set the hostname to match KVM host hostname
-- Add `alces` user:
+- Add `stack` user:
 
 ```
 useradd stack
@@ -98,11 +98,63 @@ crudini --set $CONF DEFAULT network_gateway $(ifconfig eth0 | grep 'inet ' | awk
 crudini --set $CONF DEFAULT overcloud_domain_name $(echo $HOSTNAME | cut -d . -f 2-6)
 crudini --set $CONF DEFAULT local_interface eth1
 crudini --set $CONF DEFAULT local_mtu 1500
-crudini --set $CONF DEFAULT network_cidr 10.10.0.0/24
-crudini --set $CONF DEFAULT masquerade_network 10.10.0.0/24
-crudini --set $CONF DEFAULT dhcp_start 10.10.0.50
-crudini --set $CONF DEFAULT dhcp_end 10.10.0.100
+crudini --set $CONF DEFAULT network_cidr 10.11.0.0/24
+crudini --set $CONF DEFAULT masquerade_network 10.11.0.0/24
+crudini --set $CONF DEFAULT dhcp_start 10.11.0.50
+crudini --set $CONF DEFAULT dhcp_end 10.11.0.100
 crudini --set $CONF DEFAULT inspection_interface eth1
+crudini --set $CONF DEFAULT inspection_iprange 10.11.0.101,10.11.0.150
 ```
 
-- Run the undercloud installer: `openstack undercloud install`
+- Run the undercloud installer: `openstack undercloud install`. Note, this can take quite a while
+
+- Reload shell to gain new things
+
+```
+exec su -l stack
+```
+
+- Load the openrc: `source ~/stackrc`
+
+- Load images:
+
+```
+for i in /usr/share/rhosp-director-images/overcloud-full-latest-12.0.tar /usr/share/rhosp-director-images/ironic-python-agent-latest-12.0.tar; do tar -xvf $i; done
+```
+
+- Upload images:
+
+```
+openstack overcloud image upload --image-path /home/stack/images/
+```
+
+- Verify the images exist
+
+```
+openstack image list
+```
+
+- Grab the subnet uuid using `openstack subnet list`
+- Set nameservers on the subnet:
+
+```
+openstack subnet set --dns-nameserver 8.8.8.8 <subnet uuid>
+```
+
+- Generate containers
+
+```
+sudo openstack overcloud container image tag discover \
+  --image registry.access.redhat.com/rhosp12/openstack-base:latest \
+  --tag-from-label version-release
+# get the tag name from output
+openstack overcloud container image prepare \
+  --namespace=registry.access.redhat.com/rhosp12 \
+  --prefix=openstack- \
+  --tag=<tag> \
+  --output-images-file /home/stack/local_registry_images.yaml
+mkdir -p ~/.images; openstack overcloud container image prepare --namespace=registry.access.redhat.com/rhosp12 --prefix=openstack --tag=12.0-20180124.1 --output-images-file=/home/stack/local_registry_images.yaml
+sudo openstack overcloud container image upload \
+  --config-file  /home/stack/local_registry_images.yaml \
+  --verbose
+```
