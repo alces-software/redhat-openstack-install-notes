@@ -60,6 +60,7 @@ EOF
 ```
 
 - Configure `em4` as external network
+- Restart `network`
 - Configure `firewalld` to do firewall things:
 
 ```

@@ -46,6 +46,19 @@ NETMASK=255.255.255.0
 ZONE=ctlplane
 EOF
 
+cat << EOF > /etc/sysconfig/network-scripts/ifcfg-em4
+TYPE=Ethernet
+DEFROUTE=yes
+IPV6INIT=no
+NAME=em4
+DEVICE=em4
+ONBOOT=yes
+BOOTPROTO=dhcp
+ZONE=external
+EOF
+
+service network restart
+
 systemctl disable iptables
 systemctl stop iptables
 systemctl enable firewalld
