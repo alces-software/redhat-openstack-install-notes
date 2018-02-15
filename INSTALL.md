@@ -169,6 +169,7 @@ exec su -l stack
 - Load images:
 
 ```
+sudo yum install rhosp-director-images rhosp-director-images-ipa
 for i in /usr/share/rhosp-director-images/overcloud-full-latest-12.0.tar /usr/share/rhosp-director-images/ironic-python-agent-latest-12.0.tar; do tar -xvf $i; done
 ```
 
@@ -203,8 +204,7 @@ openstack overcloud container image prepare \
   --prefix=openstack- \
   --tag=<tag> \
   --output-images-file /home/stack/local_registry_images.yaml
-mkdir -p ~/.images; openstack overcloud container image prepare --namespace=registry.access.redhat.com/rhosp12 --prefix=openstack --tag=12.0-20180124.1 --output-images-file=/home/stack/local_registry_images.yaml
 sudo openstack overcloud container image upload \
   --config-file  /home/stack/local_registry_images.yaml \
-  --verbose
+  --verbose # this takes like 5 years
 ```
