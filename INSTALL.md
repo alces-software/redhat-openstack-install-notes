@@ -195,7 +195,7 @@ openstack subnet set --dns-nameserver 8.8.8.8 <subnet uuid>
 - Generate containers
 
 ```
-sudo openstack overcloud container image tag discover \
+openstack overcloud container image tag discover \
   --image registry.access.redhat.com/rhosp12/openstack-base:latest \
   --tag-from-label version-release
 # get the tag name from output
@@ -204,7 +204,7 @@ openstack overcloud container image prepare \
   --prefix=openstack- \
   --tag=<tag> \
   --output-images-file /home/stack/local_registry_images.yaml
-sudo openstack overcloud container image upload \
+openstack overcloud container image upload \
   --config-file  /home/stack/local_registry_images.yaml \
   --verbose # this takes like 5 years
 ```
