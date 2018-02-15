@@ -55,7 +55,7 @@ subscription-manager register
 POOL_ID=$(subscription-manager list --available --all | grep "Pool ID" | awk '{print $3}')
 subscription-manager attach --pool=$POOL_ID
 yum update -y
-yum install -y libvirt-client libvirt-daemon qemu-kvm libvirt-daemon-driver-qemu libvirt-daemon-kvm virt-install bridge-utils rsync
+yum install -y libvirt-client libvirt-daemon qemu-kvm libvirt-daemon-driver-qemu libvirt-daemon-kvm virt-install bridge-utils rsync virt-install virt-viewer virt-manager xauth vim net-tools
 systemctl disable iptables
 systemctl stop iptables
 systemctl enable firewalld
