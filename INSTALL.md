@@ -143,17 +143,22 @@ chmod 0440 /etc/sudoers.d/stack
 yum install -y crudini
 CONF=$HOME/undercloud.conf
 crudini --set $CONF DEFAULT undercloud_hostname $HOSTNAME
-crudini --set $CONF DEFAULT local_ip $(ip address show dev eth0 | grep 'inet ' | awk '{print $2}')
-crudini --set $CONF DEFAULT network_gateway $(ifconfig eth0 | grep 'inet ' | awk '{print $2}')
+crudini --set $CONF DEFAULT local_ip $(ip address show dev eth1 | grep 'inet ' | awk '{print $2}')
+crudini --set $CONF DEFAULT network_gateway $(ifconfig eth1 | grep 'inet ' | awk '{print $2}')
 crudini --set $CONF DEFAULT overcloud_domain_name $(echo $HOSTNAME | cut -d . -f 2-6)
 crudini --set $CONF DEFAULT local_interface eth1
 crudini --set $CONF DEFAULT local_mtu 1500
 crudini --set $CONF DEFAULT network_cidr 10.11.0.0/24
 crudini --set $CONF DEFAULT masquerade_network 10.11.0.0/24
-crudini --set $CONF DEFAULT dhcp_start 10.11.0.50
+crudini --set $CONF DEFAULT dhcp_start 10.11.0.20
 crudini --set $CONF DEFAULT dhcp_end 10.11.0.100
 crudini --set $CONF DEFAULT inspection_interface eth1
 crudini --set $CONF DEFAULT inspection_iprange 10.11.0.101,10.11.0.150
+crudini --set $CONF DEFAULT enable_node_discovery true
+crudini --set $CONF DEFAULT discovery_default_driver pxe_ipmitool
+crudini --set $CONF DEFAULT enable_ui true
+crudini --set $CONF DEFAULT enabled_drivers pxe_ipmitool,pxe_drac
+crudini --set $CONF DEFAULT enabled_hardware_types ipmi,redfish,idrac
 ```
 
 - Run the undercloud installer: `openstack undercloud install`. Note, this can take quite a while
@@ -208,3 +213,31 @@ openstack overcloud container image upload \
   --config-file  /home/stack/local_registry_images.yaml \
   --verbose # this takes like 5 years
 ```
+
+- Create `$HOME/instackenv.json` like the following:
+
+```json
+{
+  "nodes": [
+    {
+      "name":"node01",
+      "mac": [
+        "b0:83:fe:e9:61:48"
+      ],
+      "cpu": "32",
+      "memory": "64153",
+      "disk": "900",
+      "arch": "x86_64",
+      "pm_type": "pxe_drac",
+      "pm_user": "admin",
+      "pm_password": "password",
+      "pm_addr": "10.11.0.22"
+    }
+  ]
+}
+```
+
+- Import the node(s) using `openstack overcloud node import instackenv.json --introspect --provide --instance-boot-option netboot --verbose`, this can take quite a while
+- Check the node is visible using `openstack baremetal node list`
+- Run an inspection on the nodes: `openstack overcloud node introspect --all-manageable --provide`
+- The inspection can be watched with `sudo journalctl -l -u openstack-ironic-inspector -u openstack-ironic-inspector-dnsmasq -u openstack-ironic-conductor -f`
