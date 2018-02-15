@@ -9,7 +9,56 @@
 
 - Install a clean copy of RHEL7.4
 - Configure `em1` as `br-ex` with IP `10.10.0.1` and zone `external`
-- Configure `em2` as `br-ctlplane` with IP `10.11.0.1` and zone `ctlplane`
+- Configure `em2` as `br-ctlplane` with IP `10.11.0.1` and zone `ctlplane`, or just copy and paste:
+
+```
+cat << EOF > /etc/sysconfig/network-scripts/ifcfg-em1
+NAME="em1"
+DEVICE="em1"
+ONBOOT=yes
+NETBOOT=no
+IPV6INIT=no
+TYPE=Ethernet
+NM_CONTROLLED=no
+BRIDGE=br-ex
+EOF
+
+cat << EOF > /etc/sysconfig/network-scripts/ifcfg-em2
+NAME=em2
+DEVICE=em2
+ONBOOT=yes
+NETBOOT=no
+IPV6INIT=no
+TYPE=Ethernet
+NM_CONTROLLED=no
+BRIDGE=br-ctlplane
+EOF
+
+cat << EOF > /etc/sysconfig/network-scripts/ifcfg-br-ex
+DEVICE=br-ex
+TYPE=Bridge
+BOOTPROTO=none
+ONBOOT=yes
+NM_CONTROLLED=no
+IPADDR=10.10.0.1
+NETWORK=10.10.0.0
+NETMASK=255.255.255.0
+ZONE=ex
+EOF
+
+cat << EOF > /etc/sysconfig/network-scripts/ifcfg-br-ctlplane
+DEVICE=br-ctlplane
+TYPE=Bridge
+BOOTPROTO=none
+ONBOOT=yes
+NM_CONTROLLED=no
+IPADDR=10.11.0.1
+NETWORK=10.11.0.0
+NETMASK=255.255.255.0
+ZONE=ctlplane
+EOF
+```
+
 - Configure `em4` as external network
 - Configure `firewalld` to do firewall things:
 
