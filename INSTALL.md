@@ -237,7 +237,7 @@ openstack overcloud container image upload \
 }
 ```
 
-- Import the node(s) using `openstack overcloud node import instackenv.json --introspect --provide --instance-boot-option netboot --verbose`, this can take quite a while
+- Import the node(s) using `openstack overcloud node import instackenv.json --introspect --provide --verbose`, this can take quite a while
 - Check the node is visible using `openstack baremetal node list`
 - Run an inspection on the nodes: `openstack overcloud node introspect --all-manageable --provide`
 - The inspection can be watched with `sudo journalctl -l -u openstack-ironic-inspector -u openstack-ironic-inspector-dnsmasq -u openstack-ironic-conductor -f`
